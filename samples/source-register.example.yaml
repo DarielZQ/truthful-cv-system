@@ -1,0 +1,6 @@
+schema_version: 1
+sources:
+  - id: SRC-001
+    kind: synthetic_employment_record
+  - id: SRC-002
+    kind: synthetic_education_record

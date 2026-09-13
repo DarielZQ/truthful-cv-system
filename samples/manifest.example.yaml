@@ -1,0 +1,18 @@
+schema_version: 1
+language: english
+redlines:
+  - Confidential Example
+lines:
+  - id: LINE-001
+    kind: bullet
+    text: Resolved documented support requests in a supervised synthetic example.
+    claim_ids: [CLM-001]
+    subject_id: ROLE-001
+    subject_ids: [ROLE-001]
+  - id: LINE-002
+    kind: education
+    label: Example Degree
+    text: Information Systems
+    claim_ids: [CLM-002]
+    subject_id: EDU-001
+    subject_ids: [EDU-001]

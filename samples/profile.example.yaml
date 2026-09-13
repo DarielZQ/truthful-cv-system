@@ -1,0 +1,44 @@
+schema_version: 1
+profile_id: example-candidate
+identity:
+  preferred_name: Example Candidate
+  location: Example City
+  contact:
+    email: candidate@example.com
+    phone: "+1 202 555 0123"
+    linkedin: https://www.linkedin.com/in/example-candidate
+roles:
+  - id: ROLE-001
+    organization: Example Services Ltd.
+    title: Support Assistant
+    start: 2025-01
+    end: 2025-06
+    category: professional
+    location: Example City
+education:
+  - id: EDU-001
+    institution: Example University
+    end: 2024
+claims:
+  - id: CLM-001
+    statement: Resolved documented support requests in a supervised synthetic example.
+    category: professional
+    tier: A
+    attribution: individual
+    status: approved
+    source_ids: [SRC-001]
+    tags: [support, tickets]
+    subject_id: ROLE-001
+  - id: CLM-002
+    statement: Completed a synthetic example program in information systems.
+    category: education
+    tier: A
+    attribution: individual
+    status: approved
+    source_ids: [SRC-002]
+    tags: [education]
+    subject_id: EDU-001
+skills: []
+approved_line_signatures:
+  - cfa58583a558a4bd9e00151554290936a9fd1657a27d509fd29d97fb499b06f5
+  - e1e2f9b1fa062c69f2501c2b84d227ce4b378a448c0b24abb4fad4db234342b2

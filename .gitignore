@@ -1,0 +1,76 @@
+# Private career data and local source documents
+private/
+profile/private/
+inputs/
+source-documents/
+*.personal.yaml
+*.personal.yml
+*.pdf
+
+# Credentials, tokens, and local secrets
+.env
+.env.*
+!.env.example
+.secrets/
+credentials*
+oauth*
+token*
+api-key*
+apikey*
+*.secret
+config.local.*
+.aws/
+.azure/
+id_rsa
+id_ed25519
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Generated application material and logs
+generated/*
+!generated/.gitkeep
+deliverables/
+samples/rendercv-schema/
+logs/*
+!logs/.gitkeep
+*.log
+
+# Isolated environments, caches, builds, and upstream clones
+.venv/
+venv/
+env/
+.upstream/
+node_modules/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.tox/
+.nox/
+.uv-cache/
+.coverage
+coverage.xml
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Temporary, editor, and operating-system artifacts
+.tmp/
+tmp/
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# RenderCV outputs
+rendercv_output/

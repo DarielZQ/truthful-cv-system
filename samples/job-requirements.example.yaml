@@ -1,0 +1,20 @@
+schema_version: 1
+scenarios:
+  - id: SCENARIO-DEEP
+    description: Approved matching professional claims span at least two distinct role subjects.
+    expected_fit: deep
+  - id: SCENARIO-STRONG
+    description: At least one approved matching professional claim exists, from one role subject.
+    expected_fit: strong
+  - id: SCENARIO-PARTIAL
+    description: Approved matching claims exist, but none are professional claims.
+    expected_fit: partial
+  - id: SCENARIO-ABSENT
+    description: No approved claim matches any requirement tag.
+    expected_fit: absent
+hard_filter_rule: A hard filter fails when its fit is partial or absent.
+coverage_weights:
+  deep: 1.0
+  strong: 1.0
+  partial: 0.5
+  absent: 0.0
