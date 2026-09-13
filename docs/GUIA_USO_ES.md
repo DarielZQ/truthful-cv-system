@@ -155,6 +155,9 @@ Edite primero copias sintéticas. Mantenga estas reglas:
 - Los roles usan `professional` o `structured_training`.
 - No transforme cursos en certificaciones ni formación en empleo.
 - No agregue métricas, responsabilidades o tecnologías que la evidencia no respalde.
+- Use `summary_voice: first_person` cuando el resumen deba sonar como redactado por el
+  candidato. En español use formas como `Soy`, `He trabajado` y `Tengo`, no `Ha trabajado`
+  ni `Cuenta con`.
 
 Después de revisar manualmente todas las líneas, vuelva a calcular las firmas exactas. El siguiente comando aprueba **todas** las líneas del manifiesto indicado; ejecútelo solo después de validar que cada una es verdadera y está correctamente vinculada:
 

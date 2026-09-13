@@ -57,6 +57,55 @@ def test_content_manifest_rejects_whitespace_only_language() -> None:
         ContentManifest(language="   ", lines=[])
 
 
+def test_first_person_manifest_rejects_third_person_spanish_summary() -> None:
+    with pytest.raises(ValidationError, match="first-person summary"):
+        ContentManifest(
+            language="spanish",
+            summary_voice="first_person",
+            lines=[
+                ContentLine(
+                    id="LINE-001",
+                    kind="summary",
+                    text="Ha trabajado en soporte técnico y cuenta con conocimientos de nube.",
+                    claim_ids=["CLM-001"],
+                )
+            ],
+        )
+
+
+def test_first_person_manifest_rejects_english_brings_before_punctuation() -> None:
+    with pytest.raises(ValidationError, match="first-person summary"):
+        ContentManifest(
+            language="english",
+            summary_voice="first_person",
+            lines=[
+                ContentLine(
+                    id="LINE-001",
+                    kind="summary",
+                    text="I build reliable support systems. Brings.",
+                    claim_ids=["CLM-001"],
+                )
+            ],
+        )
+
+
+def test_first_person_manifest_accepts_spanish_possessive_wording() -> None:
+    manifest = ContentManifest(
+        language="spanish",
+        summary_voice="first_person",
+        lines=[
+            ContentLine(
+                id="LINE-001",
+                kind="summary",
+                text="Mi experiencia abarca soporte técnico y atención al usuario.",
+                claim_ids=["CLM-001"],
+            )
+        ],
+    )
+
+    assert manifest.summary_voice == "first_person"
+
+
 def test_content_line_rejects_whitespace_only_text() -> None:
     with pytest.raises(ValidationError, match="text"):
         ContentLine(

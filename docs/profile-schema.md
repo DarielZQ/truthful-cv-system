@@ -66,9 +66,12 @@ must resolve to claims in the same profile.
 ## Manifest
 
 A manifest requires a nonblank `language` and a `lines` list. Optional `redlines` are literal
-strings. Each line requires a unique ID matching `LINE-` followed by at least three digits, a
-supported kind, nonblank text, and claim references. Skill, education, and credential lines
-require a nonblank label. Bullet and education lines require one `subject_id`.
+strings. `summary_voice` accepts `neutral` (the default) or `first_person`. When it is
+`first_person`, Spanish and English summary lines must contain first-person wording; known
+third-person constructions such as Spanish `Ha trabajado` / `Cuenta con` and English `Brings`
+are rejected. Each line requires a unique ID matching `LINE-` followed by at least three
+digits, a supported kind, nonblank text, and claim references. Skill, education, and credential
+lines require a nonblank label. Bullet and education lines require one `subject_id`.
 
 Manifest validation requires every line to reference at least one approved claim. Declared
 subjects must resolve; bullets use role subjects and education lines use education subjects.
@@ -87,3 +90,4 @@ education values.
 - Claim category: `professional`, `training`, `knowledge`, `education`, `language`, `certification`.
 - Role category: `professional`, `structured_training`.
 - Manifest line kind: `headline`, `summary`, `bullet`, `skill`, `education`, `credential`.
+- Summary voice: `neutral`, `first_person`.

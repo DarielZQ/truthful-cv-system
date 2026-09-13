@@ -1,6 +1,7 @@
 from hashlib import sha256
 import json
 from pathlib import Path
+import re
 from typing import Literal
 
 import yaml
@@ -37,8 +38,38 @@ class ContentLine(BaseModel):
 class ContentManifest(BaseModel):
     schema_version: int = 1
     language: NonBlankStr
+    summary_voice: Literal["neutral", "first_person"] = "neutral"
     lines: list[ContentLine]
     redlines: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def enforce_summary_voice(self) -> "ContentManifest":
+        if self.summary_voice != "first_person":
+            return self
+        markers = {
+            "spanish": r"\b(?:soy|he|tengo|estudio|cuento|aporto|puedo|me|mi|mis)\b",
+            "english": r"\b(?:i|i'm|i've|my)\b",
+        }
+        forbidden_patterns = {
+            "spanish": (r"\bha trabajado\b", r"\bcuenta con\b"),
+            "english": (r"\bbrings\b",),
+        }
+        language = self.language.casefold()
+        pattern = markers.get(language)
+        for line in (item for item in self.lines if item.kind == "summary"):
+            normalized = line.text.casefold()
+            if (
+                pattern is None
+                or not re.search(pattern, normalized)
+                or any(
+                    re.search(forbidden_pattern, normalized)
+                    for forbidden_pattern in forbidden_patterns.get(language, ())
+                )
+            ):
+                raise ValueError(
+                    f"{language} first-person summary must use first-person wording"
+                )
+        return self
 
 
 def load_manifest(path: Path) -> ContentManifest:
