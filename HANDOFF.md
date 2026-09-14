@@ -2,71 +2,36 @@
 
 ## State
 
-The candidate-neutral project tree implements profile and manifest validation, requirement matching, RenderCV YAML generation, strict PDF verification, and atomic private job tracking. The first-release candidate has passed the automated and artifact checks recorded in `PROJECT_STATUS.md`. Release commits are created only after an independent fail-closed review of the exact staged tree.
+The uncommitted Level-2 tree is intended for a second independent review. Do not commit or push it before that review.
 
-## Data locations
-
-- Public implementation: `src/truthful_cv/`
-- Public synthetic tests: `tests/`
-- Public sanitized inputs: `samples/`
-- Public schema description: `docs/profile-schema.md`
-- Spanish Windows guide: `docs/GUIA_USO_ES.md`
-- Private source register, profile, and manifests: `profile/private/`
-- Private research, generated output, and deliverables: `private/`, `generated/`, and `deliverables/`
-
-Private paths are ignored by Git. Validation and builds must never rewrite private factual claims except when a user deliberately saves an approved private change.
-
-## Setup and quality checks
-
-From the repository root:
+## Commands
 
 ```bash
 uv sync --extra dev --extra render --locked
-uv run pytest
+uv run pytest -p no:cacheprovider
 uv run ruff check .
+uv lock --check
 git diff --check
+
+uv run truthful-cv vacancy ingest --url URL --private-root private [--paste-file FILE] [--title TITLE] [--employer EMPLOYER] [--allow-public-host EXACT_HOST]
+uv run truthful-cv vacancy approve-requirements --job JOB-001 --private-root private --approve REQ-001 REQ-002
+uv run truthful-cv vacancy assess --job JOB-001 --private-root private --profile PROFILE --sources SOURCES --base-manifest PRIVATE_SIGNED_LIBRARY
+uv run truthful-cv vacancy finalize --job JOB-001 --private-root private --profile PROFILE --sources SOURCES
+# inspect the generated PDF bytes, then run without changing them:
+uv run truthful-cv vacancy finalize --job JOB-001 --private-root private --profile PROFILE --sources SOURCES --visual-approved
 ```
 
-The sanitized sample is validated by `tests/test_samples.py`. Operational commands are documented in the README and Spanish guide.
+## Invariants
 
-## Core CLI
+- Required transitions are `requirements_review -> approved -> assessed -> rendered -> finalized`; tracker updates reject skips, regressions, and cross-phase transitions.
+- Approval stores the exact requirements-file hash and assessment checks it against the captured snapshot. Rendering stores the tailored-manifest and generated-input hashes as well as the PDF hash; visual approval rejects any changed component.
+- Assessment ranks only exact signed lines from the supplied private base library and binds a relative vacancy-specific manifest reference.
+- Tag overlap retrieves approved claims but machine levels never exceed `partial`. Human `strong`/`deep` overrides require rationale.
+- Personal/legal requirement kinds default to `hard_filter: true`; unresolved `absent`/`partial` filters fail assessment.
+- The first finalize call renders and stores the artifact SHA-256. The approval call does not rerender; it verifies the stored bytes again before a hash-identical copy.
+- All workflow artifacts stay beneath the resolved private root and reject traversal and symlink/reparse escapes.
+- Renderer output is captured, expected errors are fixed/path-free, and application submission is outside the system.
 
-```bash
-uv run truthful-cv validate-profile \
-  --profile profile/private/master-profile.yaml \
-  --sources profile/private/source-register.yaml
+## Retrieval
 
-uv run truthful-cv build \
-  --profile profile/private/master-profile.yaml \
-  --sources profile/private/source-register.yaml \
-  --manifest profile/private/manifests/master.yaml \
-  --output generated/master/input.yaml
-
-uv run truthful-cv verify-pdf \
-  --profile profile/private/master-profile.yaml \
-  --sources profile/private/source-register.yaml \
-  --manifest profile/private/manifests/master.yaml \
-  --pdf generated/master/rendercv_output/candidate-cv.pdf
-```
-
-`verify-pdf` returns nonzero for malformed profile or manifest input, unreadable PDFs, configured redlines after text normalization, missing required rendered strings, excessive page count, or an insufficient text layer. Expected input failures are concise and path-free; unexpected programming exceptions are allowed to surface for debugging.
-
-## Implemented invariants
-
-- Approved claims require registered sources and cannot use Tier D.
-- Claim categories and role categories use explicit controlled values.
-- Role and education dates accept four-digit years or valid `YYYY-MM` values.
-- Required profile and outward-facing manifest strings reject whitespace-only values.
-- Claim, source, role, and education IDs are checked for duplicates where applicable.
-- Claim and manifest subject references must resolve to the required entity kind.
-- Exported lines must use approved claims and exact signatures that bind rendered profile facts.
-- Role category controls whether output appears in experience or structured training.
-- PDF verification checks normalized redlines and the expected rendered-string inventory.
-- Job tracking uses a lock and atomic replacement.
-
-## Release constraints
-
-- Review the exact staged file list before committing.
-- Confirm the Git object database contains no sensitive unreachable objects.
-- Create only a new private repository; never overwrite, force-push, or change visibility automatically.
-- Keep application submission manual.
+Only recognized Greenhouse and Lever public URLs map to documented read-only JSON GET APIs. LinkedIn, Indeed, Glassdoor, Workday, Costa Rica portals, and arbitrary employer pages are paste-only by default. Arbitrary GET requires exact `--allow-public-host` operator opt-in. No POST, authentication, cookies, JavaScript, or protection bypass exists.

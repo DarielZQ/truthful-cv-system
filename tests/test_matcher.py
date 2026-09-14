@@ -19,7 +19,7 @@ def make_claim(claim_id: str, category: str, tags: list[str], subject_id: str | 
     return Claim.model_validate(data)
 
 
-def test_professional_evidence_scores_strong_with_traceable_claims() -> None:
+def test_professional_tag_overlap_is_partial_without_semantic_override() -> None:
     profile = Profile(
         schema_version=1,
         profile_id="example",
@@ -32,11 +32,12 @@ def test_professional_evidence_scores_strong_with_traceable_claims() -> None:
 
     result = assess_fit(profile, [requirement])
 
-    assert result.matches[0].level == FitLevel.STRONG
+    assert result.matches[0].machine_level == FitLevel.PARTIAL
+    assert result.matches[0].level == FitLevel.PARTIAL
     assert result.matches[0].claim_ids == ["CLM-001"]
 
 
-def test_repeated_professional_evidence_scores_deep() -> None:
+def test_repeated_professional_evidence_still_needs_human_semantic_override() -> None:
     profile = Profile(
         schema_version=1,
         profile_id="example",
@@ -52,7 +53,8 @@ def test_repeated_professional_evidence_scores_deep() -> None:
         [JobRequirement(id="REQ-001", description="IT support", required=True, tags=["it_support"])],
     )
 
-    assert result.matches[0].level == FitLevel.DEEP
+    assert result.matches[0].machine_level == FitLevel.PARTIAL
+    assert result.matches[0].level == FitLevel.PARTIAL
 
 
 def test_training_only_scores_partial_and_absent_remains_absent() -> None:

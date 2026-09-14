@@ -95,7 +95,7 @@ Compruebe la CLI:
 uv run truthful-cv --help
 ```
 
-**Resultado esperado:** aparecen los comandos `validate-profile`, `build` y `verify-pdf`.
+**Resultado esperado:** aparecen los comandos `validate-profile`, `build`, `verify-pdf` y `vacancy`.
 
 ## Etapa 6: configurar sin exponer secretos
 
@@ -125,21 +125,25 @@ Nunca guarde tokens en YAML. Si una herramienta externa necesita autenticación,
 
 ## Etapa 7: definir los cuatro escenarios y sus reglas
 
-`FitLevel` clasifica cada requisito mediante las etiquetas de afirmaciones **aprobadas**:
+`FitLevel` separa la recuperación automática de la decisión semántica:
 
-1. **`deep`**: coinciden afirmaciones profesionales de al menos dos roles distintos.
-2. **`strong`**: coincide al menos una afirmación profesional, pero no se alcanza `deep`.
-3. **`partial`**: existen afirmaciones aprobadas coincidentes, pero ninguna es profesional.
-4. **`absent`**: ninguna afirmación aprobada coincide con las etiquetas del requisito.
+1. **`absent`**: ninguna afirmación aprobada comparte etiquetas con el requisito.
+2. **`partial`**: existen coincidencias de etiquetas; es una pista para revisión, no una prueba.
+3. **`strong`**: una revisión humana confirmó evidencia suficiente y registró una justificación.
+4. **`deep`**: una revisión humana confirmó evidencia amplia y registró una justificación.
 
 Reglas adicionales:
 
 - Solo cuentan afirmaciones con `status: approved`.
-- La coincidencia de etiquetas no distingue mayúsculas de minúsculas.
+- La coincidencia automática de etiquetas no distingue mayúsculas de minúsculas y nunca
+  produce por sí sola un nivel superior a `partial`.
+- `strong` y `deep` requieren `override_level` y una explicación no vacía en
+  `override_rationale`; aprobar la redacción de un requisito no aprueba automáticamente
+  que el candidato lo cumpla.
 - La cobertura de requisitos obligatorios pondera `deep` y `strong` como `1.0`, `partial` como `0.5` y `absent` como `0.0`.
 - Un requisito con `hard_filter: true` falla si su resultado es `partial` o `absent`.
 - El ejemplo declarativo está en `samples/job-requirements.example.yaml`.
-- Actualmente no existe un subcomando CLI para el evaluador; se consume mediante `truthful_cv.matcher.assess_fit` desde Python.
+- La coincidencia por etiquetas es una puntuación de recuperación; no es una prueba de que la persona cumpla el requisito. La revisión semántica humana sigue siendo obligatoria.
 
 **Resultado esperado:** el archivo de ejemplo contiene exactamente `deep`, `strong`, `partial` y `absent`.
 
@@ -168,6 +172,82 @@ uv run python -c "from pathlib import Path; import yaml; from truthful_cv.profil
 **Resultado esperado:** el perfil contiene una firma SHA-256 por línea aprobada y continúa fuera de `git status`.
 
 ## Etapa 9: ejecutar el programa
+
+### Flujo Level-2 de una vacante
+
+Ingrese una URL HTTPS elegida por usted:
+
+```powershell
+uv run truthful-cv vacancy ingest `
+  --url "https://careers.example.com/jobs/42" `
+  --private-root private `
+  --title "Especialista de soporte" `
+  --employer "Empresa Ejemplo"
+```
+
+LinkedIn, Indeed, Glassdoor, Workday y portales de Costa Rica siempre producen `paste_required` sin consultar la red. Las páginas arbitrarias de empleadores también requieren pegado salvo que usted haya verificado que la consulta anónima está permitida y agregue el host exacto con `--allow-public-host`. Solo las URL reconocidas de Greenhouse y Lever usan sus API públicas documentadas mediante GET. También se exige pegado ante inicio de sesión, consentimiento de cookies, CAPTCHA, Cloudflare, verificación humana, `403`, `429` o contenido incompleto. Copie únicamente el texto visible de la vacante a un archivo privado y reanude el mismo registro:
+
+```powershell
+uv run truthful-cv vacancy ingest `
+  --url "https://www.linkedin.com/jobs/view/123" `
+  --paste-file private/vacante-JOB-001.txt `
+  --private-root private `
+  --title "Especialista de soporte" `
+  --employer "Empresa Ejemplo" `
+  --location "Costa Rica" `
+  --external-id "123"
+```
+
+**Salidas esperadas:** `paste_required: JOB-001` si debe pegar el texto, o `requirements_review: JOB-001` cuando existen `private/vacancies/JOB-001/snapshot.yaml` y `requirements.yaml`. La captura normalizada no guarda HTML crudo, scripts, cookies ni encabezados.
+
+El extractor es heurístico y determinista, no un análisis semántico automático con IA. Conserva saltos de bloque y viñetas, la cita fuente y los encabezados de requisitos/preferencias/responsabilidades, pero se puede equivocar. Todos empiezan en `needs_review`. Las decisiones personales o legales (autorización laboral, ubicación, horario, compensación o viajes) usan `hard_filter: true` por defecto hasta que se revisen explícitamente. Apruebe cada registro; no evalúe borradores pendientes.
+
+Después de revisar las citas y clasificaciones, enumere únicamente los IDs que desea aprobar; los demás quedan rechazados en la misma escritura atómica:
+
+```powershell
+uv run truthful-cv vacancy approve-requirements `
+  --job JOB-001 `
+  --private-root private `
+  --approve REQ-001 REQ-002
+```
+
+**Resultado esperado:** `approved requirements: JOB-001`. Si falta una aprobación, `vacancy assess` se niega a continuar.
+
+Después de la aprobación, evalúe solo evidencia aprobada y una biblioteca base privada cuyas líneas exactas ya estén revisadas y firmadas:
+
+```powershell
+uv run truthful-cv vacancy assess `
+  --job JOB-001 `
+  --private-root private `
+  --profile profile/private/master-profile.yaml `
+  --sources profile/private/source-register.yaml `
+  --base-manifest private/content-library.yaml
+```
+
+**Resultado esperado:** `assessed: JOB-001`, `fit-report.yaml` y el subconjunto exacto `tailored-manifest.yaml`, enlazado en el tracker con ruta relativa. La heurística conserva encabezado/resumen estructural y ordena líneas de evidencia por solapamiento requerido/preferido. No redacta ni firma texto. La coincidencia de etiquetas no es una prueba: el nivel automático es solo `absent` o `partial`; `strong` y `deep` requieren decisión semántica humana y justificación no vacía.
+
+Finalice sin la bandera para generar y verificar una sola vez, pero detenerse antes de copiar:
+
+```powershell
+uv run truthful-cv vacancy finalize `
+  --job JOB-001 `
+  --private-root private `
+  --profile profile/private/master-profile.yaml `
+  --sources profile/private/source-register.yaml
+```
+
+La salida esperada es `visual_approval_required: JOB-001` y estado `rendered` con SHA-256. Abra `private/generated/JOB-001/cv.pdf` y revise todas las páginas. El sistema no garantiza una página; el verificador aplica el máximo configurado. Solo después repita con `--visual-approved`:
+
+```powershell
+uv run truthful-cv vacancy finalize `
+  --job JOB-001 `
+  --private-root private `
+  --profile profile/private/master-profile.yaml `
+  --sources profile/private/source-register.yaml `
+  --visual-approved
+```
+
+La segunda invocación no vuelve a construir ni renderizar. Exige el estado `rendered`, comprueba que los bytes aún coincidan con el hash guardado, repite la verificación estricta y copia bytes con hash idéntico. RenderCV se ejecuta sin shell, con rutas absolutas privadas, modo silencioso soportado y stdout/stderr capturados. El sistema no verifica vida continua de la vacante, no inicia sesión, no evita protecciones y no envía solicitudes de empleo; la postulación sigue siendo manual.
 
 Valide el perfil:
 

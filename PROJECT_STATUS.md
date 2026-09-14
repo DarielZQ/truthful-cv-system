@@ -1,44 +1,23 @@
 # Project Status
 
-## Working result
+## Implemented result
 
-The candidate-neutral release tree implements this private evidence-to-PDF path:
+The Level-2 release candidate implements this private pipeline:
 
 ```text
-source registry -> typed profile -> approved claims -> saved job requirements
-  -> requirement/evidence assessment -> approved content manifest
-  -> RenderCV YAML -> PDF -> automated and visual checks
+selected URL/paste -> normalized snapshot -> requirements_review -> approved
+-> assessed + vacancy-bound exact-line manifest -> rendered + artifact hash
+-> later visual approval -> finalized hash-identical deliverable
 ```
 
-## Implemented
+Implemented controls include typed evidence and exact-line signatures; structure-preserving heuristic requirement extraction; personal/legal hard filters; retrieval-only tag matching with reasoned human semantic overrides; deterministic exact-line tailoring; strict PDF checks; two-stage byte-bound visual approval; hashes binding approved requirements, the tailored manifest, render input, and PDF; strict workflow transitions; lock-protected canonical/provider/content-hash deduplication; and centralized private-root traversal/symlink/reparse containment.
 
-- Typed claims, controlled claim categories, skills, identity, contacts, sources, roles, education, and strict date validation.
-- Source-reference, duplicate-ID, subject-kind, cross-subject, status, evidence-tier, attribution, and exact-line-signature gates.
-- Four-level requirement matching (`deep`, `strong`, `partial`, `absent`), required-coverage scoring, and hard-filter failures.
-- Deterministic relevance ranking of approved manifest lines.
-- RenderCV `2.8` conversion with English and Spanish section support.
-- PDF page-count, text-layer, normalized redline, and complete rendered-string inventory checks.
-- Concise, path-free expected-input errors across all CLI commands; unexpected programming errors are not masked.
-- Locked, atomic private YAML job tracking with canonical-URL duplicate rejection.
-- Sanitized, executable examples and a complete Spanish Windows guide.
-- Candidate-specific evidence, vacancy snapshots, manifests, generated files, PDFs, credentials, environments, caches, and logs excluded from Git.
+Public retrieval is limited to documented Greenhouse Job Board API GET and Lever Postings API JSON GET adapters. LinkedIn, Indeed, Glassdoor, Workday, Costa Rica portals, and arbitrary employer pages are paste-only by default. An arbitrary page requires an exact operator `--allow-public-host` opt-in after permission review. There is no authentication, POST, JavaScript, liveness verification, or application submission.
 
-## First-release verification snapshot
+## Verification
 
-- `150 passed` from the complete pytest suite.
-- Ruff: `All checks passed!`.
-- `git diff --check`: clean.
-- Private profile validation: passed.
-- Five private CVs: rebuilt with pinned RenderCV `2.8`, passed strict `verify-pdf`, and passed visual QA.
-- Staged candidate/PII, credential, secret, and dangerous-code scan: no findings.
-- Citation verification for both research assessments: passed.
-- Git object database before the first commit: no commits, no unreachable objects, and no all-object privacy findings.
-- Independent fail-closed review is a mandatory pre-commit release gate.
+Current release verification: `245 passed`, Ruff clean, `uv lock --check` clean, and `git diff --check` clean. The suite includes offline Greenhouse/Lever transport contracts and an actual sanitized RenderCV `2.8` end-to-end execution. An independent fail-closed review found no critical or high-severity release blockers. One-page output is not promised; the strict verifier enforces the configured maximum.
 
 ## Privacy boundary
 
-The committed project contains reusable source, tests with synthetic data, documentation, configuration examples, and sanitized samples. Real identity, contacts, employment, education, credentials, languages, source documents, job snapshots, decisions, generated YAML, and PDFs remain only in ignored local paths.
-
-## Release rule
-
-Create the first root commit and private remote only after the exact staged tree passes the automated gates, all-object Git scan, and independent review. Never force-push, overwrite an existing repository, or change visibility as part of this workflow.
+Committed files are reusable source, tests, documentation, and synthetic samples. Candidate data, sources, vacancy records, generated YAML/PDFs, and deliverables remain in ignored local paths.
