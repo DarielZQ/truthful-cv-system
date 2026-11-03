@@ -1,5 +1,7 @@
 # Truthful CV System
 
+[![CI](../../actions/workflows/ci.yml/badge.svg)](../../actions/workflows/ci.yml)
+
 Private-first, evidence-based CV tailoring. A typed profile and signed exact-line content library are the factual authority; RenderCV `2.8` is only the pinned PDF adapter. The tool does not submit applications.
 
 ## Technologies
@@ -23,6 +25,7 @@ Private-first, evidence-based CV tailoring. A typed profile and signed exact-lin
 - **pytest**: offline test suite, including transport contracts and a sanitized RenderCV end-to-end run.
 - **Ruff**: linting.
 - **Hatchling**: build backend for the package.
+- **GitHub Actions**: continuous integration that runs the tests and Ruff on Ubuntu for every push and pull request.
 
 ## Level-2 workflow
 
@@ -66,5 +69,7 @@ uv run ruff check .
 uv lock --check
 git diff --check
 ```
+
+CI (`.github/workflows/ci.yml`) runs the same `uv sync`, pytest, and Ruff steps on `ubuntu-latest`. The suite needs no network, GPU, or private data.
 
 See [PROJECT_STATUS.md](PROJECT_STATUS.md), [HANDOFF.md](HANDOFF.md), [architecture](docs/architecture.md), [security](docs/security.md), [job workflow](docs/job-search.md), and the [Spanish Windows guide](docs/GUIA_USO_ES.md). Sanitized examples under `samples/` are synthetic and candidate-neutral.

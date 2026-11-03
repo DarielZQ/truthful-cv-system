@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Tests (Ubuntu, Python from .python-version)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # uv installs the Python version pinned in .python-version.
+      - name: Install uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          enable-cache: true
+
+      # Same as the README: dev tools plus the pinned RenderCV renderer.
+      - name: Install dependencies
+        run: uv sync --extra dev --extra render --locked
+
+      # The suite is offline: retrieval tests use fake transports and the
+      # RenderCV end-to-end test renders a sanitized synthetic fixture.
+      - name: Run tests
+        run: uv run --locked pytest -p no:cacheprovider -rs
+
+      - name: Lint
+        run: uv run --locked ruff check .
