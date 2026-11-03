@@ -2,6 +2,28 @@
 
 Private-first, evidence-based CV tailoring. A typed profile and signed exact-line content library are the factual authority; RenderCV `2.8` is only the pinned PDF adapter. The tool does not submit applications.
 
+## Technologies
+
+**Languages**
+
+- **Python 3.13+** (pinned to 3.14 through `.python-version`): the whole CLI, from ingestion to verification.
+
+**Libraries and platform**
+
+- **Pydantic**: typed, validated models for the profile, source register, manifests, vacancies, and tracker state.
+- **PyYAML**: reading and writing the YAML profile, manifests, requirement drafts, and samples.
+- **RenderCV 2.8** (optional `render` extra, Typst-based): the pinned adapter that turns the generated input into a PDF.
+- **pypdf**: extracts the text of the rendered PDF for strict verification (page count, red lines, exact claims).
+- **filelock**: serializes writes to the application tracker so concurrent runs cannot corrupt it.
+- **Greenhouse Job Board API and Lever Postings API**: read-only public GET retrieval of vacancies, implemented with the Python standard library (`http.client`, `ssl`).
+
+**Tools**
+
+- **uv**: Python version, virtual environment, and locked dependencies (`uv.lock`).
+- **pytest**: offline test suite, including transport contracts and a sanitized RenderCV end-to-end run.
+- **Ruff**: linting.
+- **Hatchling**: build backend for the package.
+
 ## Level-2 workflow
 
 ```bash
